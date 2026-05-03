@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>阅读 · 无界书馆</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+* {margin: 0;padding: 0;box-sizing: border-box;transition: all 0.2s ease;}
+html, body {width: 100vw;overflow-x: hidden;background: #ffffff !important;}
+body {
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  color: #222;
+  display: flex;flex-direction: column;min-height: 100vh;
+}
+body.dark{background:#121212 !important;color:#eee;}
+
+.top-nav {
+  width: 100%;padding: 14px 20px;border-bottom:1px solid #eef2f6;
+  position: relative;background:#fff !important;
+}
+body.dark .top-nav{border-color:#2a2a2a;background:#121212 !important;}
+.top-nav a {color:#222;text-decoration:none;font-size:18px;margin-right:8px;}
+body.dark .top-nav a{color:#eee;}
+
+.top-tool-bar{
+  position: absolute;top:14px;right:20px;
+  display:flex;align-items:center;gap:18px;
+}
+.dark-switch {
+  position: relative;display: inline-block;width: 48px;height: 24px;
+}
+.dark-switch input {opacity: 0;width: 0;height: 0;}
+.slider {
+  position: absolute;cursor: pointer;top:0;left:0;right:0;bottom:0;
+  background-color: #e5e7eb;border-radius: 24px;
+}
+.slider:before {
+  position:absolute;content:"";
+  height:18px;width:18px;left:3px;bottom:3px;
+  background:white;border-radius:50%;box-shadow:0 1px 3px #0002;
+}
+input:checked + .slider {background:#3b82f6;}
+input:checked + .slider:before {transform: translateX(24px);}
+
+.set-icon {
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: block;
+  transition: transform 0.2s;
+}
+.set-icon:hover {
+  transform: scale(1.05);
+}
+.set-wrap {
+  position: relative;
+  cursor: pointer;
+  line-height: 0;
+}
+.drop-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 130%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  min-width: 140px;
+  z-index: 999;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  padding: 6px 0;
+}
+body.dark .drop-menu {
+  background: #1f1f1f;
+  border-color: #333;
+}
+.drop-menu > div {
+  padding: 10px 18px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.drop-menu > div:hover {
+  background: #eff6ff;
+  color: #1e40af;
+}
+body.dark .drop-menu > div:hover {
+  background: #1e3a8a;
+  color: #fff;
+}
+
+.chap-switch-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:32px;border:1px solid #e5e7eb;
+  border-radius:8px;background:#f9fafb;
+  cursor:pointer;font-size:18px;font-weight:500;
+  margin-left:6px;
+}
+body.dark .chap-switch-btn{background:#1f1f1f;border-color:#333;color:#eee;}
+
+.box {display: flex;width: 100%;flex:1;height: 0;position:relative;background:#fff !important;}
+body.dark .box{background:#121212 !important;}
+.left-menu {
+  width: 260px;border-right:1px solid #e5e7eb;padding:18px;overflow:auto;
+  transition: width 0.2s, padding 0.2s, opacity 0.2s;
+  background:#fff !important;
+}
+body.dark .left-menu{border-color:#333;background:#121212 !important;}
+.left-menu.hide { width: 0; padding: 0; opacity: 0; border-right: 0; }
+.left-menu.show { width: 260px; padding: 18px; opacity: 1; border-right: 1px solid #e5e7eb; }
+.right-content {
+  flex:1;padding:24px 32px;overflow:auto;line-height:1.8;font-size:17px;background:#fff !important;
+}
+body.dark .right-content{background:#121212 !important;}
+.chap {padding:9px 12px;margin:6px 0;cursor:pointer;border-radius:10px;font-size:14px;}
+.chap:hover {background:#f1f5f9;}
+body.dark .chap:hover{background:#2d3748;}
+.chap.active {background:#3b82f6;color:white;}
+.right-content h1{font-size:28px;margin:20px 0 12px;}
+.right-content h2{font-size:24px;margin:18px 0 10px;}
+.right-content h3{font-size:20px;margin:14px 0 8px;}
+.right-content p{margin:0.8em 0;}
+.right-content ul, .right-content ol{margin:0.5em 0 0.5em 1.5em;}
+.footer {
+  width:100%;padding:20px 20px;text-align:center;font-size:12px;color:#8c9aaf;
+  border-top:1px solid #eef2f8;background:#fff;
+}
+body.dark .footer{border-top-color:#26282e;background:#121212;}
+.modal{
+  position:fixed;top:0;left:0;width:100vw;height:100vh;
+  background:rgba(0,0,0,0.6);z-index:9999;
+  display:none;align-items:center;justify-content:center;
+}
+.modal-box{
+  width:80%;max-width:420px;background:#fff;padding:30px;border-radius:20px;border:1px solid #e5e7eb;
+}
+body.dark .modal-box{background:#1f1f1f;border-color:#333;color:#eee;}
+.modal-box input{
+  width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:12px;margin:16px 0;outline:none;
+}
+body.dark .modal-box input{background:#2b2b2b;border-color:#444;color:#eee;}
+.modal-btn{
+  padding:9px 22px;background:#3b82f6;color:#fff;
+  border:none;cursor:pointer;border-radius:40px;margin:0 5px;
+}
+.range-wrap{margin:10px 0;}
+.lang-select { margin: 15px 0; text-align: center; }
+.lang-select select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; }
+</style>
+</head>
+<body>
+<div class="top-nav">
+  <a href="javascript:history.back()">＜</a>
+  <span class="chap-switch-btn" onclick="toggleMenu()">☰</span>
+  <div class="top-tool-bar">
+    <label class="dark-switch">
+      <input type="checkbox" id="darkCheck">
+      <span class="slider"></span>
+    </label>
+    <div class="set-wrap" onclick="toggleMenuPanel()">
+      <svg class="set-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 507.451 507.45" xml:space="preserve" preserveAspectRatio="xMidYMid meet">
+        <g fill="#356BEE" style="fill:#356BEE;stroke:none" stroke="none">
+          <g id="settings" fill="#356BEE" style="fill:#356BEE;stroke:none" stroke="none">
+            <path d="M440.813,280.5c0-7.65,2.55-15.3,2.55-25.5s0-17.85-2.55-25.5l53.55-43.35c5.1-5.1,5.1-10.2,2.55-15.3l-51-89.25    c-2.55-2.55-7.649-5.1-15.3-2.55l-63.75,25.5c-12.75-10.2-28.05-17.85-43.35-25.5l-10.2-66.3C315.863,5.1,308.212,0,303.113,0    h-102c-5.101,0-12.75,5.1-12.75,10.2l-10.2,68.85c-15.3,5.1-28.05,15.3-43.35,25.5l-61.2-25.5c-7.65-2.55-12.75,0-17.851,5.1    l-51,89.25c-2.55,2.55,0,10.2,5.1,15.3l53.55,40.8c0,7.65-2.55,15.3-2.55,25.5s0,17.85,2.55,25.5l-53.55,43.35    c-5.1,5.101-5.1,10.2-2.55,15.301l51,89.25c2.55,2.55,7.649,5.1,15.3,2.55l63.75-25.5c12.75,10.2,28.05,17.85,43.35,25.5    l10.2,66.3c0,5.1,5.1,10.2,12.75,10.2h102c5.101,0,12.75-5.101,12.75-10.2l10.2-66.3c15.3-7.65,30.6-15.3,43.35-25.5l63.75,25.5    c5.101,2.55,12.75,0,15.301-5.101l51-89.25c2.55-5.1,2.55-12.75-2.551-15.3L440.813,280.5z M252.113,344.25    c-48.45,0-89.25-40.8-89.25-89.25s40.8-89.25,89.25-89.25s89.25,40.8,89.25,89.25S300.563,344.25,252.113,344.25z" fill="#356BEE" style="fill:#356BEE;stroke:none" stroke="none"/>
+          </g>
+        </g>
+      </svg>
+      <div class="drop-menu" id="dropMenu">
+        <div onclick="saveReadCode()">阅读记录</div>
+        <div onclick="openVoiceModal()">语音朗读</div>
+        <div onclick="openTranslateModal()">文本翻译</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="box">
+  <div class="left-menu" id="chapterMenu"></div>
+  <div class="right-content" id="articleContent">正文加载中...</div>
+</div>
+
+<div class="footer">
+  <div>无界书馆 · 典藏开放 | 公版资源 · 自由共享 | 如涉版权请联系处理</div>
+  <div style="margin-top: 6px;">Copyright © All Rights Reserved 版权所有</div>
+  <div style="margin-top: 4px;">ICP备XXXXXX号 | 公安备XXXXXXXX号</div>
+</div>
+
+<div class="modal" id="readTipModal">
+  <div class="modal-box">
+    <h3>阅读节点进度码</h3>
+    <input type="text" id="readCodeShow" readonly>
+    <button class="modal-btn" onclick="closeReadTipModal()">确认</button>
+  </div>
+</div>
+
+<div class="modal" id="voiceModal">
+  <div class="modal-box">
+    <h3>语音朗读</h3>
+    <div class="range-wrap"><label>语速：</label><input type="range" id="rateRange" min="0.5" max="2" step="0.1" value="1"><span id="rateText">1</span></div>
+    <div class="range-wrap"><label>音量：</label><input type="range" id="volumeRange" min="0" max="1" step="0.1" value="1"><span id="volumeText">1</span></div>
+    <div><button class="modal-btn" onclick="startVoice()">开始朗读</button><button class="modal-btn" onclick="pauseVoice()">暂停</button><button class="modal-btn" onclick="stopVoice()">停止</button></div>
+    <button class="modal-btn" style="margin-top:15px;" onclick="closeVoiceModal()">关闭</button>
+  </div>
+</div>
+
+<div class="modal" id="translateModal">
+  <div class="modal-box">
+    <h3>文本翻译</h3>
+    <div class="lang-select">
+      <label>目标语言：</label>
+      <select id="targetLang">
+        <option value="zh">简体中文</option>
+        <option value="en">英文</option>
+      </select>
+    </div>
+    <div style="display: flex; gap: 10px; justify-content: center; margin: 15px 0;">
+      <button class="modal-btn" onclick="translateContent()">确认翻译</button>
+      <button class="modal-btn" onclick="closeTranslateModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let synth = window.speechSynthesis, currentUtterance = null;
+let currentChapterIndex = 0, bookChapters = [], globalRepo = "", globalPath = "";
+
+function syncDarkMode(){
+  let isDark = localStorage.getItem("darkMode") === "true";
+  document.body.classList.toggle("dark", isDark);
+  let cb = document.getElementById("darkCheck");
+  if(cb) cb.checked = isDark;
+}
+document.getElementById("darkCheck").addEventListener("change",function(){
+  document.body.classList.toggle("dark");
+  localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+});
+syncDarkMode();
+window.addEventListener("pageshow", function() { syncDarkMode(); });
+
+function toggleMenuPanel(){
+  let dom = document.getElementById("dropMenu");
+  dom.style.display = dom.style.display === "block" ? "none" : "block";
+}
+
+function toggleMenu(){
+  let menu = document.getElementById("chapterMenu");
+  if(menu.classList.contains("hide")) {
+    menu.classList.remove("hide");
+    menu.classList.add("show");
+  } else if(menu.classList.contains("show")) {
+    menu.classList.remove("show");
+    menu.classList.add("hide");
+  } else {
+    if(window.innerWidth > 768) {
+      menu.classList.add("show");
+      menu.classList.remove("hide");
+    } else {
+      menu.classList.add("hide");
+      menu.classList.remove("show");
+    }
+  }
+}
+(function initMenuState(){
+  let menu = document.getElementById("chapterMenu");
+  if(window.innerWidth > 768) {
+    menu.classList.add("show");
+    menu.classList.remove("hide");
+  } else {
+    menu.classList.add("hide");
+    menu.classList.remove("show");
+  }
+})();
+window.addEventListener('resize', function(){
+  let menu = document.getElementById("chapterMenu");
+  if(window.innerWidth > 768 && menu.classList.contains("hide")) {
+    menu.classList.remove("hide");
+    menu.classList.add("show");
+  } else if(window.innerWidth <= 768 && menu.classList.contains("show")) {
+    menu.classList.remove("show");
+    menu.classList.add("hide");
+  }
+});
+
+function encodePos(str){return btoa(encodeURIComponent(str));}
+function decodePos(str){return decodeURIComponent(atob(str));}
+function saveReadCode(){
+  let scrollTop = document.getElementById("articleContent").scrollTop;
+  let record = { repo: globalRepo, path: globalPath, chapterIdx: currentChapterIndex, scrollTop };
+  document.getElementById("readCodeShow").value = encodePos(JSON.stringify(record));
+  document.getElementById("readTipModal").style.display = "flex";
+  document.getElementById("dropMenu").style.display = "none";
+}
+function closeReadTipModal(){ document.getElementById("readTipModal").style.display = "none"; }
+
+function openVoiceModal(){
+  document.getElementById("voiceModal").style.display = "flex";
+  document.getElementById("dropMenu").style.display = "none";
+  document.getElementById("rateRange").oninput=function(){ document.getElementById("rateText").innerText=this.value; };
+  document.getElementById("volumeRange").oninput=function(){ document.getElementById("volumeText").innerText=this.value; };
+}
+function closeVoiceModal(){ stopVoice(); document.getElementById("voiceModal").style.display = "none"; }
+function startVoice(){
+  let text = document.getElementById("articleContent").innerText.replace(/\s+/g," ");
+  if(!text) return;
+  stopVoice();
+  let utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = parseFloat(document.getElementById("rateRange").value);
+  utterance.volume = parseFloat(document.getElementById("volumeRange").value);
+  utterance.lang = "zh-CN";
+  currentUtterance = utterance;
+  synth.speak(utterance);
+}
+function pauseVoice(){ if(synth.speaking) synth.pause(); }
+function stopVoice(){ if(synth.speaking) synth.cancel(); currentUtterance = null; }
+
+function openTranslateModal(){
+  document.getElementById("translateModal").style.display = "flex";
+  document.getElementById("dropMenu").style.display = "none";
+}
+function closeTranslateModal(){
+  document.getElementById("translateModal").style.display = "none";
+}
+async function translateContent(){
+  const targetLang = document.getElementById("targetLang").value;
+  const contentDiv = document.getElementById("articleContent");
+  const originalText = contentDiv.innerText;
+  if(!originalText.trim()){
+    alert("没有可翻译的文本");
+    return;
+  }
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(originalText)}&langpair=auto|${targetLang}`;
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    let translatedText = data.responseData.translatedText;
+    translatedText = translatedText.replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const translatedHtml = translatedText.split(/\n/).map(para => para.trim() ? `<p>${para}</p>` : '').join('');
+    contentDiv.innerHTML = translatedHtml || `<p>${translatedText}</p>`;
+    closeTranslateModal();
+  } catch(err) {
+    console.error(err);
+    alert("翻译失败，请检查网络后重试");
+  }
+}
+
+let gCfg = null, githubRoot = "", pathFix = "";
+async function init(){
+  let params = new URLSearchParams(location.search);
+  globalRepo = params.get("repo");
+  globalPath = params.get("path");
+  if(!globalRepo || !globalPath){
+    document.getElementById("articleContent").innerHTML = "<p>参数错误</p>";
+    return;
+  }
+  let res = await fetch("./gs.json");
+  gCfg = await res.json();
+  githubRoot = gCfg.githubRoot;
+  pathFix = gCfg.isLocal ? "" : "/main";
+  await loadBookChapter();
+  // 检查是否有待恢复的进度码（从 index/list 传递过来）
+  let savedCode = localStorage.getItem("lastReadCode");
+  if(savedCode){
+    try{
+      let record = JSON.parse(decodePos(savedCode));
+      if(record.repo === globalRepo && record.path === globalPath && record.chapterIdx !== undefined && bookChapters[record.chapterIdx]){
+        currentChapterIndex = record.chapterIdx;
+        await loadChapterContent(currentChapterIndex);
+        setTimeout(() => {
+          document.getElementById("articleContent").scrollTop = record.scrollTop || 0;
+        }, 100);
+        localStorage.removeItem("lastReadCode");
+        return;
+      }
+    } catch(e){}
+  }
+  await loadChapterContent(0);
+  document.addEventListener("click",function(e){
+    if(!document.querySelector(".set-wrap").contains(e.target)){
+      document.getElementById("dropMenu").style.display = "none";
+    }
+  });
+}
+async function loadBookChapter(){
+  let url = `${githubRoot}${globalRepo}${pathFix}/${globalPath}/index.json`;
+  try{
+    let resp = await fetch(url);
+    if(!resp.ok) throw new Error();
+    bookChapters = await resp.json();
+    let chapHtml = "";
+    bookChapters.forEach((item,idx)=>{
+      chapHtml += `<div class="chap" onclick="loadChapterContent(${idx})">${item.name}</div>`;
+    });
+    document.getElementById("chapterMenu").innerHTML = chapHtml;
+  }catch(e){
+    document.getElementById("chapterMenu").innerHTML = "目录加载失败";
+    document.getElementById("articleContent").innerHTML = "<p>章节目录不存在</p>";
+  }
+}
+async function loadChapterContent(idx){
+  stopVoice();
+  currentChapterIndex = idx;
+  let chap = bookChapters[idx];
+  if(!chap){ document.getElementById("articleContent").innerHTML = "<p>章节不存在</p>"; return; }
+  let url = `${githubRoot}${globalRepo}${pathFix}/${globalPath}/${chap.path}`;
+  try{
+    let resp = await fetch(url);
+    let mdText = await resp.text();
+    let html = marked.parse(mdText);
+    document.getElementById("articleContent").innerHTML = html;
+    document.querySelectorAll(".chap").forEach((el,i)=>{ if(i===idx) el.classList.add("active"); else el.classList.remove("active"); });
+    document.getElementById("articleContent").scrollTop = 0;
+  }catch(e){
+    document.getElementById("articleContent").innerHTML = "<p>正文加载失败</p>";
+  }
+}
+init();
+</script>
+</body>
+</html>

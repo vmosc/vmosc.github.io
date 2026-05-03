@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>无界书馆 · 公版古籍典藏</title>
+<style>
+* {margin: 0;padding: 0;box-sizing: border-box;}
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #ffffff !important;
+}
+body {
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  color: #222;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+body.dark{background:#121212 !important;color:#eee;}
+
+.top-navbar {
+  background: #fff;
+  border-bottom: 1px solid #eef2f6;
+  padding: 10px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  z-index: 100;
+}
+body.dark .top-navbar {
+  background: #121212;
+  border-bottom-color: #2a2a2a;
+}
+.logo-area {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.logo-icon {
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.logo-text {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+body.dark .logo-text { color: #f3f4f6; }
+
+.top-tool-bar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.dark-switch {
+  position: relative;display: inline-block;width: 48px;height: 24px;
+}
+.dark-switch input {opacity: 0;width: 0;height: 0;}
+.slider {
+  position: absolute;cursor: pointer;
+  top:0;left:0;right:0;bottom:0;
+  background-color: #e5e7eb;border-radius: 24px;
+}
+.slider:before {
+  position:absolute;content:"";
+  height:18px;width:18px;left:3px;bottom:3px;
+  background:white;border-radius:50%;box-shadow:0 1px 3px #0002;
+}
+input:checked + .slider {background:#3b82f6;}
+input:checked + .slider:before {transform: translateX(24px);}
+
+.set-icon {
+  cursor: pointer;
+  width: 42px;
+  height: 42px;
+  display: block;
+  transition: transform 0.2s;
+}
+.set-icon:hover {
+  transform: scale(1.05);
+}
+.set-wrap {
+  cursor: pointer;
+  line-height: 0;
+}
+
+.hero-section {
+  text-align: center;
+  padding: 28px 24px 24px;
+  background: #f9fafb;
+  flex-shrink: 0;
+}
+body.dark .hero-section {
+  background: #161616;
+}
+.hero-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+body.dark .hero-title {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.hero-desc {
+  font-size: 18px;
+  font-weight: 500;
+  color: #4b5563;
+  margin-bottom: 28px;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.5;
+}
+body.dark .hero-desc { color: #cbd5e1; }
+
+.search-wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 48px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  transition: all 0.2s;
+}
+body.dark .search-wrap {
+  background: #1f1f1f;
+  border-color: #2e2e32;
+}
+.search-wrap:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 14px rgba(59,130,246,0.12);
+}
+.search-input {
+  flex: 1;
+  padding: 12px 20px;
+  font-size: 15px;
+  border: none;
+  background: transparent !important;
+  outline: none;
+  border-radius: 48px;
+  color: #111827;
+}
+body.dark .search-input { color: #f1f5f9; }
+.search-input::placeholder { color: #94a3b8; font-weight: 400; }
+
+.search-btn {
+  background: #3b82f6;
+  border: none;
+  border-radius: 40px;
+  width: 44px;
+  height: 44px;
+  margin: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.search-btn:hover {
+  background: #2563eb;
+  transform: scale(0.96);
+}
+.search-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: white;
+}
+.category-tips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+.cat-tag {
+  color: #475569;
+  font-size: 13px;
+  background: #ffffff;
+  padding: 5px 16px;
+  border-radius: 30px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+body.dark .cat-tag {
+  background: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #ccc;
+}
+.cat-tag:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  transform: translateY(-1px);
+}
+
+.wrap {
+  flex: 1;
+  width: 100%;
+  padding: 24px 32px 28px;
+  background: #ffffff;
+  overflow-y: auto;
+  min-height: 0;
+}
+body.dark .wrap {
+  background: #121212;
+}
+.section-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.section-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  margin-bottom: 8px;
+}
+body.dark .section-header h2 {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+.section-header p {
+  color: #6c727f;
+  font-size: 15px;
+}
+body.dark .section-header p { color: #9ca3af; }
+.item-box {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+.cat-item {
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 20px;
+  padding: 24px 20px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+body.dark .cat-item {
+  background: #18181b;
+  border-color: #2d2d30;
+}
+.cat-item:hover {
+  border-color: #3b82f6;
+  transform: translateY(-5px);
+  box-shadow: 0 15px 25px rgba(0,0,0,0.05);
+}
+.cat-item h3 {
+  font-size: 1.4rem;
+  font-weight: 650;
+  margin: 0;
+  color: #0f172a;
+}
+body.dark .cat-item h3 { color: #eee; }
+.cat-item p {
+  color: #5b677b;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin: 0 0 4px;
+}
+body.dark .cat-item p { color: #adadc9; }
+.cat-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  border-top: 1px solid #f0f2f6;
+  padding-top: 12px;
+}
+body.dark .cat-footer {
+  border-top-color: #2a2e3a;
+}
+.cat-author {
+  font-size: 12px;
+  color: #5d6b82;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.cat-stats {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: #6681a2;
+  font-weight: 500;
+}
+body.dark .cat-stats { color: #8c9cb0; }
+
+.footer {
+  width: 100%;
+  padding: 20px 20px;
+  text-align: center;
+  font-size: 12px;
+  color: #8c9aaf;
+  flex-shrink: 0;
+  border-top: 1px solid #eef2f8;
+  background: #ffffff;
+}
+body.dark .footer {
+  border-top-color: #26282e;
+  background: #121212;
+}
+
+.modal{
+  position: fixed;top:0;left:0;width:100vw;height:100vh;
+  background:rgba(0,0,0,0.6);z-index:9999;
+  display:none;align-items:center;justify-content:center;
+}
+.modal-box{
+  width:80%;max-width:420px;background:#fff;padding:30px;border-radius:20px;border:1px solid #e5e7eb;
+}
+body.dark .modal-box{background:#1f1f1f;border-color:#333;color:#eee;}
+.modal-box input{
+  width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:12px;margin:16px 0;outline:none;
+}
+body.dark .modal-box input{background:#2b2b2b;border-color:#444;color:#eee;}
+.modal-btn{
+  padding:9px 22px;background:#3b82f6;color:#fff;
+  border:none;cursor:pointer;border-radius:40px;margin:0 5px;
+}
+#searchMask{
+  position:fixed;top:0;left:0;width:100vw;height:100vh;
+  background:rgba(0,0,0,0.6);z-index:9998;display:none;padding:20px;
+}
+#resultList{
+  background:#fff;max-width:560px;margin:50px auto;padding:24px;border-radius:20px;border:1px solid #e5e7eb;
+}
+body.dark #resultList{background:#1f1f1f;border-color:#333;}
+.result-item{padding:12px;border-bottom:1px solid #eee;cursor:pointer;}
+body.dark .result-item{border-color:#333;}
+.result-item:hover{background:#f5f7fb;}
+body.dark .result-item:hover{background:#292e38;}
+
+.wrap::-webkit-scrollbar { width: 4px; }
+.wrap::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+.wrap::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+body.dark .wrap::-webkit-scrollbar-track { background: #1e1e2a; }
+body.dark .wrap::-webkit-scrollbar-thumb { background: #3a3a4a; }
+
+@media (max-width: 768px) {
+  .top-navbar { padding: 10px 20px; }
+  .hero-title { font-size: 28px; }
+  .hero-desc { font-size: 16px; margin-bottom: 20px; max-width: 95%; }
+  .search-wrap { max-width: 96%; }
+  .search-input { padding: 10px 16px; font-size: 14px; }
+  .search-btn { width: 40px; height: 40px; }
+  .wrap { padding: 20px 16px 24px; }
+  .item-box { gap: 16px; }
+  .cat-item { padding: 18px; }
+  .set-icon { width: 36px; height: 36px; }
+}
+</style>
+</head>
+<body>
+
+<div class="top-navbar">
+  <div class="logo-area">
+    <span class="logo-icon">📖</span>
+    <span class="logo-text">无界书馆</span>
+  </div>
+  <div class="top-tool-bar">
+    <label class="dark-switch">
+      <input type="checkbox" id="darkCheck">
+      <span class="slider"></span>
+    </label>
+    <div class="set-wrap" onclick="openPosModal()">
+      <svg class="set-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 48 48" preserveAspectRatio="xMidYMid meet">
+        <defs><style>.cls-1{fill:url(#linear-gradient);}</style>
+        <linearGradient gradientUnits="userSpaceOnUse" id="linear-gradient" x1="12.22" x2="37.03" y1="24" y2="24">
+          <stop offset="0" stop-color="#00cfff"/>
+          <stop offset="1" stop-color="#00afd6"/>
+        </linearGradient></defs>
+        <title/><g id="icons" fill="#216AE6" style="fill:#216AE6;stroke:none" stroke="none" class="">
+        <g data-name="Layer 3" id="Layer_3" fill="#216AE6" style="fill:#216AE6;stroke:none" stroke="none" class="">
+        <path class="cls-1" d="M18.72,8.31a10.79,10.79,0,0,0-5.17,5.24A12.74,12.74,0,0,0,14.7,26.81l9.93,14.25,9.92-14.25A12.33,12.33,0,0,0,37,19.36C37,10.6,28,4,18.72,8.31Zm6.08,15.2A4.51,4.51,0,1,1,29.3,19,4.51,4.51,0,0,1,24.8,23.51Z" fill="#216AE6" style="fill:#216AE6;stroke:none" stroke="none"/>
+        </g></g>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<div class="hero-section">
+  <div class="hero-title">无界 · 共读公版</div>
+  <div class="hero-desc">
+    汇集公版典籍与开放资源，跨越时代与地域，让知识无界流动。<br>自由阅读，思想共鸣，智识永续。
+  </div>
+  <div class="search-wrap">
+    <input class="search-input" id="kw" placeholder="检索书名、作者..." onkeydown="if(event.key==='Enter')searchGo()">
+    <button class="search-btn" onclick="searchGo()">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+      </svg>
+    </button>
+  </div>
+  <div class="category-tips">
+    <span class="cat-tag">经部古籍</span>
+    <span class="cat-tag">史部文献</span>
+    <span class="cat-tag">子部诸子</span>
+    <span class="cat-tag">集部诗文</span>
+    <span class="cat-tag">公版典藏</span>
+  </div>
+</div>
+
+<div class="wrap" id="mainWrap">
+  <div class="section-header">
+    <h2>最新文集</h2>
+    <p>每套文库包含丰富篇目，所有内容开放阅读</p>
+  </div>
+  <div class="item-box" id="catBox"></div>
+</div>
+
+<div class="footer">
+  <div>无界书馆 · 典藏开放 | 公版资源 · 自由共享 | 如涉版权请联系处理</div>
+  <div style="margin-top: 6px;">Copyright © All Rights Reserved 版权所有</div>
+  <div style="margin-top: 4px;">ICP备XXXXXX号 | 公安备XXXXXXXX号</div>
+</div>
+
+<div class="modal" id="posModal">
+  <div class="modal-box">
+    <h3>读取阅读进度</h3>
+    <input type="text" id="globalPosInput" placeholder="粘贴进度码继续阅读">
+    <div>
+      <button class="modal-btn" onclick="globalJumpPos()">确认</button>
+      <button class="modal-btn" onclick="closePosModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div id="searchMask" onclick="closeSearch()">
+  <div id="resultList"></div>
+</div>
+
+<script>
+function syncDarkMode(){
+  let isDark = localStorage.getItem("darkMode") === "true";
+  document.body.classList.toggle("dark", isDark);
+  let cb = document.getElementById("darkCheck");
+  if(cb) cb.checked = isDark;
+}
+document.getElementById("darkCheck").addEventListener("change",function(){
+  document.body.classList.toggle("dark");
+  localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+});
+syncDarkMode();
+
+window.addEventListener("pageshow", function() {
+  syncDarkMode();
+});
+
+let g_cfg = [], globalBookIndex = [];
+function encodePos(str){return btoa(encodeURIComponent(str));}
+function decodePos(str){return decodeURIComponent(atob(str));}
+function openPosModal(){document.getElementById('posModal').style.display='flex';}
+function closePosModal(){document.getElementById('posModal').style.display='none';}
+function globalJumpPos(){
+  let val = document.getElementById('globalPosInput').value.trim();
+  if(!val) return;
+  localStorage.setItem('lastReadCode', val);
+  alert('已加载阅读进度，即将跳转');
+  try {
+    let record = JSON.parse(decodePos(val));
+    if(record.repo && record.path) {
+      location.href = `show.html?repo=${record.repo}&path=${encodeURIComponent(record.path)}`;
+      return;
+    }
+  } catch(e) {}
+  location.reload();
+}
+
+// 递归加载所有 index.json 文件，收集书籍信息
+async function recursiveLoadIndex(githubRoot, pathFix, repo, subPath = "") {
+  let url = `${githubRoot}${repo}${pathFix}/${subPath}index.json`;
+  try {
+    let resp = await fetch(url);
+    if (!resp.ok) return;
+    let data = await resp.json();
+    // 判断数据类型：书籍列表通常包含 name 和 path 字段，目录索引则只有 path 字段
+    if (data.length > 0 && data[0].hasOwnProperty('name') && data[0].hasOwnProperty('path')) {
+      // 书籍叶子节点，直接添加
+      data.forEach(book => {
+        globalBookIndex.push({
+          repo: repo,
+          path: subPath + book.path,
+          name: book.name,
+          author: book.author || ""
+        });
+      });
+    } else {
+      // 目录节点，继续递归
+      for (let item of data) {
+        if (item.path) {
+          await recursiveLoadIndex(githubRoot, pathFix, repo, subPath + item.path + "/");
+        }
+      }
+    }
+  } catch(e) {
+    // 忽略 404
+  }
+}
+
+async function init() {
+  let res = await fetch("./gs.json");
+  g_cfg = await res.json();
+  let html = "";
+  g_cfg.list.forEach((item, idx) => {
+    let itemCount = Math.floor(Math.random() * 180) + 40;
+    html += `
+    <div class="cat-item" onclick="goCat('${item.repo}')">
+      <h3>${item.name}</h3>
+      <p>${item.desc || "精选公版古籍库，含丰富注疏、影印本与现代校译版。"}</p>
+      <div class="cat-footer">
+        <div class="cat-author">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px;"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          公版资源
+        </div>
+        <div class="cat-stats">
+          <span>📄 ${itemCount} 册</span>
+        </div>
+      </div>
+    </div>
+    `;
+  });
+  document.getElementById("catBox").innerHTML = html;
+  
+  // 递归加载所有仓库的书籍索引
+  const githubRoot = g_cfg.githubRoot;
+  const pathFix = g_cfg.isLocal ? "" : "/main";
+  for (let cat of g_cfg.list) {
+    if (cat.sub && cat.sub.length > 0) {
+      for (let sub of cat.sub) {
+        if (sub.type === "dir") {
+          // dir 类型：拼接仓库 + path
+          await recursiveLoadIndex(githubRoot, pathFix, cat.repo, sub.path + "/");
+        } else if (sub.type === "repo") {
+          // repo 类型：独立仓库，根目录
+          await recursiveLoadIndex(githubRoot, pathFix, sub.repo, "");
+        }
+      }
+    } else {
+      // 没有二级分类，直接加载仓库根目录
+      await recursiveLoadIndex(githubRoot, pathFix, cat.repo, "");
+    }
+  }
+  console.log("书籍索引加载完成，共", globalBookIndex.length, "条");
+}
+
+function searchGo(){
+  let kw = document.getElementById("kw").value.trim();
+  if(!kw) return;
+  let filterList = globalBookIndex.filter(item => {
+    let name = item.name.toLowerCase();
+    let author = item.author.toLowerCase();
+    let searchTerm = kw.toLowerCase();
+    return name.includes(searchTerm) || author.includes(searchTerm);
+  });
+  let resHtml = "";
+  if(filterList.length === 0){
+    resHtml = "<div style='padding:24px;text-align:center;'>📭 未找到相关典籍</div>";
+  }else{
+    filterList.forEach(item=>{
+      let displayText = item.name;
+      if(item.author) displayText += ` · ${item.author}`;
+      resHtml += `
+      <div class="result-item" onclick="goReadFromSearch('${item.repo}','${item.path}')">
+        📘 ${displayText}
+      </div>
+      `;
+    });
+  }
+  document.getElementById("resultList").innerHTML = resHtml;
+  document.getElementById("searchMask").style.display = "block";
+}
+function closeSearch(){document.getElementById("searchMask").style.display = "none";}
+function goCat(repo) {location.href = `list.html?repo=${repo}`;}
+function goReadFromSearch(repo, path) {
+  location.href = `show.html?repo=${repo}&path=${encodeURIComponent(path)}`;
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>书籍列表 · 无界书馆</title>
+<style>
+* {margin: 0;padding: 0;box-sizing: border-box;transition: all 0.2s ease;}
+html, body {width: 100vw;overflow-x: hidden;background: #ffffff !important;}
+body {
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  color: #222;
+  display: flex;flex-direction: column;min-height: 100vh;
+}
+body.dark{background:#121212 !important;color:#eee;}
+
+.top-bar {
+  padding: 14px 20px;border-bottom: 1px solid #eef2f6;
+  position:relative;background:#fff !important;
+}
+body.dark .top-bar{border-color:#2a2a2a;background:#121212 !important;}
+.top-bar a {color: #222;text-decoration: none;font-size: 18px;margin-right: 12px;}
+body.dark .top-bar a{color:#eee;}
+.top-bar h2 {display:inline-block;font-size:18px;font-weight:500;}
+
+.top-tool-bar{
+  position: absolute;top:14px;right:20px;
+  display:flex;align-items:center;gap:18px;
+}
+.dark-switch {
+  position: relative;display: inline-block;width: 48px;height: 24px;
+}
+.dark-switch input {opacity: 0;width: 0;height: 0;}
+.slider {
+  position: absolute;cursor: pointer;top:0;left:0;right:0;bottom:0;
+  background-color: #e5e7eb;border-radius: 24px;
+}
+.slider:before {
+  position:absolute;content:"";
+  height:18px;width:18px;left:3px;bottom:3px;
+  background:white;border-radius:50%;box-shadow:0 1px 3px #0002;
+}
+input:checked + .slider {background:#3b82f6;}
+input:checked + .slider:before {transform: translateX(24px);}
+
+.set-icon {
+  cursor: pointer;
+  width: 42px;
+  height: 42px;
+  display: block;
+  transition: transform 0.2s;
+}
+.set-icon:hover {
+  transform: scale(1.05);
+}
+.set-wrap {
+  cursor: pointer;
+  line-height: 0;
+}
+
+.tab-bar {
+  display: flex;flex-wrap: wrap;gap: 12px;padding: 20px 24px;
+  border-bottom: 1px solid #eef2f6;
+  background: #ffffff;
+}
+body.dark .tab-bar {
+  background: #121212;
+  border-bottom-color: #2a2a2a;
+}
+.tab-item {
+  padding: 8px 22px;
+  border: none;
+  border-radius: 40px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #4b5563;
+  transition: all 0.2s;
+}
+body.dark .tab-item { color: #cbd5e1; }
+.tab-item:hover {
+  background: #f1f5f9;
+  color: #1e40af;
+}
+body.dark .tab-item:hover {
+  background: #2d3748;
+  color: #90cdf4;
+}
+.tab-item.active {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+  box-shadow: 0 4px 8px rgba(59,130,246,0.2);
+}
+
+.wrap {
+  padding: 24px 24px;
+  flex: 1;
+  background: #ffffff;
+}
+body.dark .wrap { background: #121212; }
+.book-item {
+  padding: 16px 20px;
+  margin: 12px 0;
+  border: 1px solid #eef2f6;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 16px;
+  background: transparent;
+  transition: all 0.2s;
+}
+body.dark .book-item {
+  border-color: #2d2d30;
+}
+.book-item:hover {
+  border-color: #3b82f6;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.footer {
+  width: 100%;
+  padding: 20px 20px;
+  text-align: center;
+  font-size: 12px;
+  color: #8c9aaf;
+  flex-shrink: 0;
+  border-top: 1px solid #eef2f8;
+  background: #ffffff;
+}
+body.dark .footer {
+  border-top-color: #26282e;
+  background: #121212;
+}
+
+.modal{
+  position: fixed;top:0;left:0;width:100vw;height:100vh;
+  background:rgba(0,0,0,0.4);z-index:9999;
+  display:none;align-items:center;justify-content:center;
+}
+.modal-box{
+  width:80%;max-width:420px;background:#fff;padding:30px;border-radius:20px;border:1px solid #e5e7eb;
+}
+body.dark .modal-box{background:#1f1f1f;border-color:#333;color:#eee;}
+.modal-box input{
+  width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:12px;margin:16px 0;outline:none;
+}
+body.dark .modal-box input{background:#2b2b2b;border-color:#444;color:#eee;}
+.modal-btn{
+  padding:9px 22px;background:#3b82f6;color:#fff;
+  border:none;cursor:pointer;border-radius:40px;margin:0 5px;
+}
+</style>
+</head>
+<body>
+<div class="top-bar">
+  <a href="./index.html">＜</a>
+  <h2 id="catName"></h2>
+  <div class="top-tool-bar">
+    <label class="dark-switch">
+      <input type="checkbox" id="darkCheck">
+      <span class="slider"></span>
+    </label>
+    <div class="set-wrap" onclick="openPosModal()">
+      <svg class="set-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 48 48" preserveAspectRatio="xMidYMid meet">
+        <defs><style>.cls-1{fill:url(#linear-gradient);}</style>
+        <linearGradient gradientUnits="userSpaceOnUse" id="linear-gradient" x1="12.22" x2="37.03" y1="24" y2="24">
+          <stop offset="0" stop-color="#00cfff"/>
+          <stop offset="1" stop-color="#00afd6"/>
+        </linearGradient></defs>
+        <title/><g id="icons" fill="#216AE6" style="fill:#216AE6;stroke:none" stroke="none" class="">
+        <g data-name="Layer 3" id="Layer_3" fill="#216AE6" style="fill:#216AE6;stroke:none" stroke="none" class="">
+        <path class="cls-1" d="M18.72,8.31a10.79,10.79,0,0,0-5.17,5.24A12.74,12.74,0,0,0,14.7,26.81l9.93,14.25,9.92-14.25A12.33,12.33,0,0,0,37,19.36C37,10.6,28,4,18.72,8.31Zm6.08,15.2A4.51,4.51,0,1,1,29.3,19,4.51,4.51,0,0,1,24.8,23.51Z" fill="#216AE6" style="fill:#216AE6;stroke:none" stroke="none"/>
+        </g></g>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<div class="tab-bar" id="tabBar"></div>
+<div class="wrap" id="bookList">加载中...</div>
+
+<div class="footer">
+  <div>无界书馆 · 典藏开放 | 公版资源 · 自由共享 | 如涉版权请联系处理</div>
+  <div style="margin-top: 6px;">Copyright © All Rights Reserved 版权所有</div>
+  <div style="margin-top: 4px;">ICP备XXXXXX号 | 公安备XXXXXXXX号</div>
+</div>
+
+<div class="modal" id="posModal">
+  <div class="modal-box">
+    <h3>读取阅读进度</h3>
+    <input type="text" id="globalPosInput" placeholder="粘贴进度码继续阅读">
+    <div>
+      <button class="modal-btn" onclick="globalJumpPos()">确认</button>
+      <button class="modal-btn" onclick="closePosModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function syncDarkMode(){
+  let isDark = localStorage.getItem("darkMode") === "true";
+  document.body.classList.toggle("dark", isDark);
+  let cb = document.getElementById("darkCheck");
+  if(cb) cb.checked = isDark;
+}
+document.getElementById("darkCheck").addEventListener("change",function(){
+  document.body.classList.toggle("dark");
+  localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+});
+syncDarkMode();
+window.addEventListener("pageshow", function() { syncDarkMode(); });
+
+const repo = new URLSearchParams(location.search).get("repo");
+let gCfg = [],subList = [],githubRoot = "",pathFix = "";
+function encodePos(str){return btoa(encodeURIComponent(str));}
+function decodePos(str){return decodeURIComponent(atob(str));}
+function openPosModal(){document.getElementById('posModal').style.display='flex';}
+function closePosModal(){document.getElementById('posModal').style.display='none';}
+function globalJumpPos(){
+  let val = document.getElementById('globalPosInput').value.trim();
+  if(!val) return;
+  localStorage.setItem('lastReadCode', val);
+  alert('已加载阅读进度，即将跳转');
+  try {
+    let record = JSON.parse(decodePos(val));
+    if(record.repo && record.path) {
+      location.href = `show.html?repo=${record.repo}&path=${encodeURIComponent(record.path)}`;
+      return;
+    }
+  } catch(e) {}
+  location.reload();
+}
+
+async function init(){
+  const res = await fetch("./gs.json");
+  gCfg = await res.json();
+  githubRoot = gCfg.githubRoot;
+  pathFix = gCfg.isLocal ? "" : "/main";
+  const nowCat = gCfg.list.find(item => item.repo === repo);
+  if(!nowCat) {document.getElementById("bookList").innerText = "无此分类";return;}
+  document.getElementById("catName").innerText = nowCat.name;
+  subList = nowCat.sub || [];
+  renderTab();
+  if(subList.length) switchTab(0);
+}
+function renderTab(){
+  let html = "";
+  subList.forEach((item, idx) => {
+    html += `<div class="tab-item ${idx===0?'active':''}" onclick="switchTab(${idx})">${item.name}</div>`;
+  });
+  document.getElementById("tabBar").innerHTML = html;
+}
+async function switchTab(idx){
+  document.querySelectorAll(".tab-item").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".tab-item")[idx].classList.add("active");
+  const sub = subList[idx];
+  let fetchUrl = sub.type === "dir" ? `${githubRoot}${repo}${pathFix}/${sub.path}/index.json` : `${githubRoot}${sub.repo}${pathFix}/index.json`;
+  try{
+    const res = await fetch(fetchUrl);
+    if(!res.ok) throw new Error("not ok");
+    const list = await res.json();
+    list.sort((a,b) => a.name.localeCompare(b.name));
+    let bookHtml = "";
+    list.forEach((book,bIdx) => {
+      const jumpPath = sub.type === "dir" ? `${sub.path}/${book.path}` : book.path;
+      let displayText = book.name;
+      if(book.author) displayText += ` · ${book.author}`;
+      bookHtml += `<div class="book-item" onclick="goRead('${idx}','${bIdx}','${sub.type}','${sub.repo||repo}','${jumpPath}')">${displayText}</div>`;
+    });
+    document.getElementById("bookList").innerHTML = bookHtml;
+  }catch(e){
+    document.getElementById("bookList").innerHTML = "该分类暂无数据";
+  }
+}
+function goRead(subIdx,bookIdx,type,subRepo,path){
+  location.href = `show.html?subIdx=${subIdx}&bookIdx=${bookIdx}&type=${type}&repo=${subRepo}&path=${encodeURIComponent(path)}`;
+}
+init();
+</script>
+</body>
+</html>
